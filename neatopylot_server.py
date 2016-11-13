@@ -24,60 +24,110 @@ Revision history:
 
 '''
 
-DEVICE = '/dev/ttyACM0'               # Raspbian
-#DEVICE = '/dev/tty.usbmodem1d131'    # Mac OS X
-#DEVICE = 'DEBUG'                     # Debugging
-
-import serial
-import socket
+import serial.aio
+from aiohttp import web, WSMsgType
+import asyncio
 import time
 import sys
 
-# Import values and functions common to client and server
-from neatopylot_header import *
 
-# Serial-port timeout
-TIMEOUT_SEC  = 0.1
+clients = []
+connection = None
 
-# Sends LF-terminated command to robot and reads result
-def docommand(port, command):
-    port.write(command + '\n')
-    
- 
-# main =========================================================================
 
-# Default to no robot (test mode)
-robot = None
-    
-# DEBUG is special name to enable debugging    
-if DEVICE != 'DEBUG':
+class Output(asyncio.Protocol):
+    def connection_made(self, transport):
+        global connection
+        self.transport = transport
+        connection = transport
+
+        #connection.write(b'It works\n')
+
+    def data_received(self, data):
+        print(data)
+        for ws in clients:
+            res = ws.send_str(data.decode('ascii'))
+
+    def connection_lost(self, exc):
+        global connection
+        self.transport.close()
+        connection = None
+
+    def pause_writing(self):
+        pass
+
+    def resume_writing(self):
+        pass
+
+
+async def handle_websocket(request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    clients.append(ws)
+
+    async for msg in ws:
+        if msg.type == WSMsgType.TEXT:
+            connection.write(msg.data.encode('ascii') + b'\n')
+        elif msg.type == WSMsgType.CLOSE or msg.type == WSMsgType.CLOSED or msg.type == WSMsgType.ERROR:
+            clients.remove(ws)
+
+    return ws
+
+
+async def index(request):
+    with open('index.html') as f:
+        return web.Response(text=f.read(), content_type="text/html")
+
+
+def main(device="/dev/ttyACM0", port="20000", listen="::", *_):
+    global connection
+    if _:
+        raise ValueError("Too many things!!!")
+
     try:
-        robot = serial.Serial(DEVICE, 115200, \
-            serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, TIMEOUT_SEC)
+        connection = serial.aio.create_serial_connection(
+            asyncio.get_event_loop(), Output,
+            device, 115200, serial.EIGHTBITS,
+            serial.PARITY_NONE, serial.STOPBITS_ONE, .1
+        )
     except serial.SerialException:
-        print('Unable to connect to XV-11 as device ' + DEVICE)
-        print('Make sure XV-11 is powered on and USB cable is plugged in!')
+        print("Unable to connect to XV-11 on {}".format(device))
+        print("Please make sure it is powered on and USB is connected")
         sys.exit(1)
+
+    app = web.Application(loop=asyncio.get_event_loop())
+    app.router.add_get('/', index)
+    app.router.add_static('/static', 'static')
+    app.router.add_get('/control', handle_websocket)
+
+    app_server = asyncio.get_event_loop().create_server(app.make_handler(), listen, port)
+    asyncio.get_event_loop().run_until_complete(asyncio.gather(app_server, connection))
+    asyncio.get_event_loop().run_forever()
+
+    print("Huh... this probably shouldn't happen")
+
+
+if __name__ == "__main__":
+    main(*sys.argv[1:])
+
+# Put the XV-11 into test mode
+#    docommand(robot, 'TestMode on')
+# Spin up the LIDAR
+#    docommand(robot, 'SetLDSRotation on')
     
-    # Put the XV-11 into test mode
-    docommand(robot, 'TestMode on')
-    
-    # Spin up the LIDAR
-    docommand(robot, 'SetLDSRotation on')
-    
-else:
-    print('No robot connected; running in test mode')
+#else:
+#    print('No robot connected; running in test mode')
     
 
 # Keep accepting connections on socket
-while True:
+while False:
     
     # Serve a socket on the host and port specified on the command line
 
     sock = None   
     
     while True:
-    
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
         try:
@@ -154,7 +204,7 @@ while True:
 
 # Shut down the XV-11
     
-if (robot):
+if False:
 
     print('Shutting down ...')
     

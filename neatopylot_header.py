@@ -15,7 +15,7 @@ GNU General Public License for more details.
 '''
 
 # These are sensible values for an ad-hoc wifi network
-HOST = '192.168.2.2'
+HOST = '192.168.11.138'
 PORT = 20000
 
 # These are arbitrary
