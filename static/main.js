@@ -67,13 +67,19 @@ function getSpeed() {
 }
 
 function setMotors(left, right, speed) {
-    if (left == 0) {
+    if (left == 0 && left != lastLeft) {
         cmd("setmotor LWheelDisable");
     }
 
-    if (right == 0) {
+    if (right == 0 && right != lastRight) {
         cmd("setmotor RWheelDisable");
     }
+
+    lastLeft = left;
+    lastRight = right;
+
+    if (left == 0 && right == 0) return;
+
     cmd("setmotor " + (left * 100) + " " + (right * 100) + " " + speed + " 60");
 }
 
