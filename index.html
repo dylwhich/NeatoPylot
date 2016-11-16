@@ -14,6 +14,23 @@
         <br/>
         <input type="button" class="neato-cmd" onclick="cmd('TestMode on')" value="TestMode On"/> <input type="button" class="neato-cmd" onclick="cmd('TestMode off')" value="TestMode Off"/><br/>
         <input type="button" class="neato-cmd" onclick="cmd('SetLDSRotation on')" value="Lazers On"/> <input type="button" class="neato-cmd" onclick="cmd('SetLDSRotation off')" value="Lazerz Off"/><br/>
+        <input type="button" class="neato-cmd" onclick="cmd('SetMotor VacuumOn')" value="Vacuum On"/> <input type="button" class="neato-cmd" onclick="cmd('Setmotor VacuumOff')" value="Vacuum Off"/><br/>
+        Sound: <select id="sound">
+          <option value="0">Waking Up</option>
+          <option value="1">Starting Cleaning</option>
+          <option value="2">Cleaning Completed</option>
+          <option value="3">Attention Needed</option>
+          <option value="6">Beep</option>
+          <option value="7">Shrill Beep</option>
+          <option value="8">Low Beep</option>
+          <option value="9">Static</option>
+          <option value="10">High Static</option>
+          <option value="19">Alert</option>
+        </select>
+        <input type="button" class="neato-cmd" onclick="cmd('Play ' + document.getElementById('sound').value);" value="Play"/> <input type="button" class="neato-cmd" onclick="cmd('Play Stop')" value="Stop"/><br/>
+        <input value="2000" type="number" min="1" max="2000" id="brushspeed" onchange="cmd('SetMotor 0 0 0 0 ' + this.value + ' Brush');"/>
+        <input type="button" class="neato-cmd" onclick="cmd('SetMotor BrushEnable');cmd('SetMotor 0 0 0 0 ' + document.getElementById('brushspeed').value + ' Brush');" value="Brush On"/> <input type="button" class="neato-cmd" onclick="cmd('Setmotor BrushDisable')" value="Brush Off"/><br/>
+      </div>
     </form>
   </body>
 </html>

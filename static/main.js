@@ -67,13 +67,14 @@ function getSpeed() {
 }
 
 function setMotors(left, right, speed) {
-    if (left == lastLeft && right === lastRight)
-        return;
+    if (left == 0) {
+        cmd("setmotor LWheelDisable");
+    }
 
-    lastLeft = left;
-    lastRight = right;
-
-    cmd("m " + (left * 10000) + " " + (right * 10000) + " " + speed);
+    if (right == 0) {
+        cmd("setmotor RWheelDisable");
+    }
+    cmd("setmotor " + (left * 100) + " " + (right * 100) + " " + speed + " 60");
 }
 
 function doSteering(axes) {
@@ -130,8 +131,7 @@ function doSteering(axes) {
         }
     }
 
-    if (left != 0 || right != 0)
-    setMotors(left, right, getSpeed());
+    setMotors(left, right, getSpeed() * Math.max(Math.abs(left), Math.abs(right)));
 }
 
 function doKeySteering() {
@@ -241,6 +241,8 @@ window.onkeydown = function(e) {
         KEYS[LEFT] = true;
     } else if (key == 39) {
         KEYS[RIGHT] = true;
+    } else {
+        return;
     }
 
     doKeySteering();
@@ -257,6 +259,8 @@ window.onkeyup = function(e) {
         KEYS[LEFT] = false;
     } else if (key == 39) {
         KEYS[RIGHT] = false;
+    } else {
+        return;
     }
 
     doKeySteering();
