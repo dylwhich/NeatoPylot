@@ -46,7 +46,7 @@ MAX_LIDAR_DIST_MM = 2500
 
 # Motor parameters
 DIST  = 10000 # Arbitrarily large distance to simulate infinity
-SPEED = 200
+SPEED = 300
 
 # Frame title
 BASE_TITLE = "Neatopylot"
@@ -131,6 +131,9 @@ class Neato_Client:
         
     # Drives in specified direction
     def drive(self, x, y):
+        x, y = -y, -x
+
+        print(x, y)
                 
         # Status changed
         if (x,y) != (self.lastx,self.lasty):
@@ -145,9 +148,9 @@ class Neato_Client:
             if y == 0:
                 
                 if x > 0:
-                    lft,rgt = 1,0
+                    lft,rgt = 1,-1
                 elif x < 0:
-                    lft,rgt = 0,1
+                    lft,rgt = -1,1
                 else:
                     lft,rgt = 0,0
                     

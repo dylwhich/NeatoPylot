@@ -15,8 +15,13 @@ var STEER_CONF = {
     right: 3,
 };
 
+var lastLeft = 0, lastRight = 0;
+
 sock.onopen = function() {
 }
+
+var KEYS = [false, false, false, false];
+var UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 sock.onmessage = function(message) {
     console.log(message);
@@ -62,6 +67,12 @@ function getSpeed() {
 }
 
 function setMotors(left, right, speed) {
+    if (left == lastLeft && right === lastRight)
+        return;
+
+    lastLeft = left;
+    lastRight = right;
+
     cmd("m " + (left * 10000) + " " + (right * 10000) + " " + speed);
 }
 
@@ -122,6 +133,38 @@ function doSteering(axes) {
     if (left != 0 || right != 0)
     setMotors(left, right, getSpeed());
 }
+
+function doKeySteering() {
+    var x = 0, y = 0;
+    var left = 0, right = 0;
+
+    if (KEYS[UP]) y = 1;
+    if (KEYS[DOWN]) y = -1;
+    if (KEYS[LEFT]) x = -1;
+    if (KEYS[RIGHT]) x = 1;
+
+    if (y == 0) {
+        if (x < 0) {
+            left = -1;
+            right = 1;
+        } else if (x > 0) {
+            left = 1;
+            right = -1;
+        }
+    } else {
+        left = y;
+        right = y;
+
+        if (x < 0) {
+            left *= .5;
+        } else if (x > 0) {
+            right *= .5;
+        }
+    }
+
+    setMotors(left, right, getSpeed());
+}
+
 
 function updateStatus() {
   if (!haveEvents) {
@@ -186,6 +229,38 @@ function scangamepads() {
 
 window.addEventListener("gamepadconnected", connecthandler);
 window.addEventListener("gamepaddisconnected", disconnecthandler);
+
+window.onkeydown = function(e) {
+    var key = e.keyCode ? e.keyCode : e.which;
+
+    if (key == 38) {
+        KEYS[UP] = true;
+    } else if (key == 40) {
+        KEYS[DOWN] = true;
+    } else if (key == 37) {
+        KEYS[LEFT] = true;
+    } else if (key == 39) {
+        KEYS[RIGHT] = true;
+    }
+
+    doKeySteering();
+};
+
+window.onkeyup = function(e) {
+    var key = e.keyCode ? e.keyCode : e.which;
+
+    if (key == 38) {
+        KEYS[UP] = false;
+    } else if (key == 40) {
+        KEYS[DOWN] = false;
+    } else if (key == 37) {
+        KEYS[LEFT] = false;
+    } else if (key == 39) {
+        KEYS[RIGHT] = false;
+    }
+
+    doKeySteering();
+};
 
 if (!haveEvents) {
   setInterval(scangamepads, 500);

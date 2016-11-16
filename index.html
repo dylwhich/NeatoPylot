@@ -8,10 +8,12 @@
     It works?
     <form action="#" method="POST" onsubmit="doGuiCmd(); return false;">
       <div>
-	<input type="text" placeholder="command" id="command-text"/> <input type="submit" value="Send"/>
-	<br/>
-	<hr/>
-	<textarea id="output" rows="20" cols="80"></textarea>
+        <input type="text" placeholder="command" id="command-text"/> <input type="submit" value="Send"/>
+        <br/><hr/>
+        <textarea id="output" rows="20" cols="80"></textarea>
+        <br/>
+        <input type="button" class="neato-cmd" onclick="cmd('TestMode on')" value="TestMode On"/> <input type="button" class="neato-cmd" onclick="cmd('TestMode off')" value="TestMode Off"/><br/>
+        <input type="button" class="neato-cmd" onclick="cmd('SetLDSRotation on')" value="Lazers On"/> <input type="button" class="neato-cmd" onclick="cmd('SetLDSRotation off')" value="Lazerz Off"/><br/>
     </form>
   </body>
 </html>
