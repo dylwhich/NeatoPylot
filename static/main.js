@@ -75,6 +75,14 @@ function setMotors(left, right, speed) {
         cmd("setmotor RWheelDisable");
     }
 
+    if (left != 0 && lastLeft == 0) {
+        cmd("setmotor LWheelEnable");
+    }
+
+    if (right != 0 && lastRight == 0) {
+        cmd("setmotor RWheelEnable");
+    }
+
     lastLeft = left;
     lastRight = right;
 
