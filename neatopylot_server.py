@@ -41,8 +41,6 @@ class Output(asyncio.Protocol):
         self.transport = transport
         connection = transport
 
-        #connection.write(b'It works\n')
-
     def data_received(self, data):
         print(data)
         for ws in clients:
@@ -66,11 +64,16 @@ async def handle_websocket(request):
 
     clients.append(ws)
 
-    async for msg in ws:
-        if msg.type == WSMsgType.TEXT:
-            connection.write(msg.data.encode('ascii') + b'\n')
-        elif msg.type == WSMsgType.CLOSE or msg.type == WSMsgType.CLOSED or msg.type == WSMsgType.ERROR:
-            clients.remove(ws)
+    try:
+        async for msg in ws:
+            if msg.type == WSMsgType.TEXT:
+                connection.write(msg.data.encode('ascii') + b'\n')
+            elif msg.type == WSMsgType.CLOSE or msg.type == WSMsgType.CLOSED or msg.type == WSMsgType.ERROR:
+                clients.remove(ws)
+    finally:
+        clients.remove(ws)
+
+    await ws.close()
 
     return ws
 
