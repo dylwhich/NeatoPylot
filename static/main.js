@@ -31,7 +31,7 @@ var BUTTON_BINDINGS = {
     3: "",
 
     // L1
-    4: "SetMotor BrushEnable\nSetMotor 0 0 0 0 2000 Brush",
+    4: "SetMotor BrushEnable\nSetMotor 0 0 0 0 " + document.getElementById('brushspeed').value + " Brush",
 
     // R1
     5: "SetMotor VacuumOn",
@@ -55,10 +55,18 @@ var BUTTON_BINDINGS = {
     11: "Playsound 3",
 
     // D-Up
-    12: "",
+    12: function() {
+	var brush = document.getElementById('brushspeed');
+	brush.value = Math.min(parseInt(brush.value) + 100, 2000);
+	cmd('SetMotor 0 0 0 0 ' + brush.value + ' Brush');
+    },
 
     // D-Down
-    13: "",
+    13: function() {
+	var brush = document.getElementById('brushspeed');
+	brush.value = Math.max(parseInt(brush.value) - 100, 0);
+	cmd('SetMotor 0 0 0 0 ' + brush.value + ' Brush');
+    },
 
     // D-Left
     14: "",
@@ -321,7 +329,11 @@ function doButtons(buttons) {
 
         if (pressed) {
             if (BUTTON_BINDINGS[i]) {
-                cmd(BUTTON_BINDINGS[i]);
+		if ((typeof BUTTON_BINDINGS[i]) == "function") {
+                    BUTTON_BINDINGS[i]();
+		} else {
+		    cmd(BUTTON_BINDINGS[i]);
+		}
             }
         }
     }
