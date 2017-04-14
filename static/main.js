@@ -1,4 +1,6 @@
-var sock = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/control");
+var OVERRIDE_HOST = "10.1.254.147";
+
+var sock = new WebSocket("ws://" + (OVERRIDE_HOST ? OVERRIDE_HOST : window.location.hostname) + ":" + window.location.port + "/control");
 
 
 //var GAMEPADS = {};
@@ -15,24 +17,96 @@ var STEER_CONF = {
     right: 3,
 };
 
+var BUTTON_BINDINGS = {
+    // A
+    0: "PlaySound 3",
+
+    // B
+    1: "",
+
+    // X
+    2: "",
+
+    // Y
+    3: "",
+
+    // L1
+    4: "SetMotor BrushEnable\nSetMotor 0 0 0 0 2000 Brush",
+
+    // R1
+    5: "SetMotor VacuumOn",
+
+    // L2
+    6: "SetMotor BrushDisable",
+
+    // R2
+    7: "SetMotor VacuumOff",
+
+    // Select
+    8: "",
+
+    // Start
+    9: "",
+
+    // L3
+    10: "",
+
+    // R3
+    11: "Playsound 3",
+
+    // D-Up
+    12: "",
+
+    // D-Down
+    13: "",
+
+    // D-Left
+    14: "",
+
+    // D-Right
+    15: "",
+
+    // Mode
+    16: "",
+};
+
 var lastLeft = 0, lastRight = 0;
 
 sock.onopen = function() {
-}
+};
 
 var KEYS = [false, false, false, false];
 var UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
+var lineCount = 0;
 
 sock.onmessage = function(message) {
-    console.log(message);
-    document.getElementById("output").value += '< ' + message.data;
-    document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
+    if ((++lineCount % 100) == 0) {
+        document.getElementById("output").value = "";
+    }
+
+    if (message.data.indexOf("Digital Sensor Name") == 0 || message.data.indexOf("SensorName") == 0) {
+        var lines = message.data.split("\n");
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            if (line.indexOf(",") > -1) {
+                var parts = line.split(",");
+                var sensorName = parts[0];
+                var sensorVal = parts[1];
+
+                if (sensorName != "SensorName")
+                    onSensor(sensorName, sensorVal);
+            }
+        }
+    }
+
+    //document.getElementById("output").value += '< ' + message.data;
+    //document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
 }
 
 function cmd(value) {
     sock.send(value + "\n");
-    document.getElementById("output").value += "> " + value + "\n";
-    document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
+    //document.getElementById("output").value += "> " + value + "\n";
+    //document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
 }
 
 function doGuiCmd() {
@@ -113,8 +187,6 @@ function doSteering(axes) {
             y = -y;
         }
 
-        console.log("x", x, "y", y);
-
         if (y == 0) {
             // Straight turning, no forward momentum
 
@@ -179,6 +251,14 @@ function doKeySteering() {
     setMotors(left, right, getSpeed());
 }
 
+function onSensor(name, value) {
+    var sensorElement = document.getElementById("sensor-" + name);
+
+    if (sensorElement != null) {
+        sensorElement.value = value;
+    }
+}
+
 
 function updateStatus() {
   if (!haveEvents) {
@@ -222,9 +302,29 @@ function updateStatus() {
       //var left = controller.axes[getLeftAxis()];
       //var right = controller.axes[getRightAxis()];
       doSteering(controller.axes);
+      doButtons(controller.buttons);
   }
 
   requestAnimationFrame(updateStatus);
+}
+
+function doButtons(buttons) {
+    for (var i = 0; i < buttons.length; i++) {
+        var val = buttons[i];
+
+        var pressed = val == 1.0;
+
+        if (typeof(val) == "object") {
+            pressed = val.pressed;
+            val = val.value;
+        }
+
+        if (pressed) {
+            if (BUTTON_BINDINGS[i]) {
+                cmd(BUTTON_BINDINGS[i]);
+            }
+        }
+    }
 }
 
 function scangamepads() {
@@ -280,6 +380,24 @@ window.onkeyup = function(e) {
     doKeySteering();
 };
 
+function requestSensors() {
+    if (!document.getElementById("use-sensors").checked) {
+        clearInterval(sensorTimer);
+        return;
+    }
+
+    cmd("getanalogsensors");
+    cmd("getdigitalsensors");
+}
+
+function enablePoll() {
+    if (document.getElementById("use-sensors").checked) {
+        sensorTimer = setInterval(requestSensors, 2000);
+    }
+}
+
 if (!haveEvents) {
   setInterval(scangamepads, 500);
 }
+
+var sensorTimer = setInterval(requestSensors, 2000);

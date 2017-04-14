@@ -5,7 +5,6 @@
     <script type="text/javascript" src="static/main.js"></script>
   </head>
   <body>
-    It works?
     <form action="#" method="POST" onsubmit="doGuiCmd(); return false;">
       <div>
         <input type="text" placeholder="command" id="command-text"/> <input type="submit" value="Send"/>
@@ -30,6 +29,10 @@
         <input type="button" class="neato-cmd" onclick="cmd('Play ' + document.getElementById('sound').value);" value="Play"/> <input type="button" class="neato-cmd" onclick="cmd('Play Stop')" value="Stop"/><br/>
         <input value="2000" type="number" min="1" max="2000" id="brushspeed" onchange="cmd('SetMotor 0 0 0 0 ' + this.value + ' Brush');"/>
         <input type="button" class="neato-cmd" onclick="cmd('SetMotor BrushEnable');cmd('SetMotor 0 0 0 0 ' + document.getElementById('brushspeed').value + ' Brush');" value="Brush On"/> <input type="button" class="neato-cmd" onclick="cmd('Setmotor BrushDisable')" value="Brush Off"/><br/>
+      </div>
+      <div id="sensors">
+        <label><input checked="checked" id="use-sensors" type="checkbox" value="1" onchange="enablePoll();"/>Poll Sensors</label><br/>
+        <input type="number" id="sensor-WallSensorInMM" value="0"/>
       </div>
     </form>
   </body>
