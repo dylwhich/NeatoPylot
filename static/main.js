@@ -57,14 +57,14 @@ var BUTTON_BINDINGS = {
     // D-Up
     12: function() {
 	var brush = document.getElementById('brushspeed');
-	brush.value = Math.min(parseInt(brush.value) + 100, 2000);
+	brush.value = Math.min(parseInt(brush.value) + 5, 2000);
 	cmd('SetMotor 0 0 0 0 ' + brush.value + ' Brush');
     },
 
     // D-Down
     13: function() {
 	var brush = document.getElementById('brushspeed');
-	brush.value = Math.max(parseInt(brush.value) - 100, 0);
+	brush.value = Math.max(parseInt(brush.value) - 5, 0);
 	cmd('SetMotor 0 0 0 0 ' + brush.value + ' Brush');
     },
 
