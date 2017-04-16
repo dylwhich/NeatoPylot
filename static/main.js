@@ -1,4 +1,4 @@
-var OVERRIDE_HOST = "10.1.254.147";
+var OVERRIDE_HOST = false; //"10.1.254.147";
 
 var sock = new WebSocket("ws://" + (OVERRIDE_HOST ? OVERRIDE_HOST : window.location.hostname) + ":" + window.location.port + "/control");
 
