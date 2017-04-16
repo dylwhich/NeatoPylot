@@ -24,7 +24,8 @@ Revision history:
 
 '''
 
-import serial.aio
+import serial
+from serial_asyncio import *
 from aiohttp import web, WSMsgType
 import asyncio
 import time
@@ -89,7 +90,7 @@ def main(device="/dev/ttyACM0", port="20000", listen="::", *_):
         raise ValueError("Too many things!!!")
 
     try:
-        connection = serial.aio.create_serial_connection(
+        connection = create_serial_connection(
             asyncio.get_event_loop(), Output,
             device, 115200, serial.EIGHTBITS,
             serial.PARITY_NONE, serial.STOPBITS_ONE, .1
